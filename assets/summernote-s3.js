@@ -95,6 +95,9 @@ var summernoteS3uploader = {
                     formData.append('x-amz-date', response.x_amz_date);
                     formData.append('x-amz-credential', response.x_amz_credential);
                     formData.append('x-amz-algorithm', response.x_amz_algorithm);
+                    if (response.x_amz_security_token) {
+                        formData.append('x-amz-security-token', response.x_amz_security_token);
+                    }
                     formData.append('file', summernoteS3uploader.file);
                     $.ajax({
                         data: formData,
