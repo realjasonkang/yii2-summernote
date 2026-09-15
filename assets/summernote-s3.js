@@ -101,14 +101,21 @@ var summernoteS3uploader = {
                     formData.append('file', summernoteS3uploader.file);
                     $.ajax({
                         data: formData,
-                        dataType: 'xml',
+                        // Sem dataType: a resposta da S3 nunca é lida (a URL da imagem é montada
+                        // abaixo, no cliente). Declarar 'xml' só criava um ponto de falha: com
+                        // success_action_status 200 a S3 responde com CORPO VAZIO (só o 201 devolve
+                        // o XML <PostResponse>), o jQuery tentava parsear vazio como XML e passava
+                        // textStatus 'parsererror' adiante.
                         type: 'POST',
                         cache: false,
                         contentType: false,
                         processData: false,
                         url: 'https://' + summernoteS3uploader.bucket + '.s3.amazonaws.com/',
                         complete: function(data, textStatus) {
-                            if (textStatus === 'success') {
+                            // Qualquer 2xx é upload aceito. Antes exigia textStatus === 'success',
+                            // que nunca acontecia por causa do parsererror acima: o arquivo subia,
+                            // a imagem não era inserida no editor e nada era logado.
+                            if (data.status >= 200 && data.status < 300) {
                                 var url = 'https://' + summernoteS3uploader.bucket + '.s3.amazonaws.com/' + summernoteS3uploader.getFolder() + filenamePrefix + summernoteS3uploader.fileSlugify(summernoteS3uploader.file.name);
                                 setTimeout(function () {  summernoteS3uploader.editor.summernote('insertImage', url); }, 1000);
                             }
